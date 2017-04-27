@@ -2,7 +2,8 @@
 
 class Gol
 {
-    private $seed;
+    private $initial_seed;
+    private $iteration_seed;
 
     public function __construct( $seed )
     {
@@ -11,82 +12,76 @@ class Gol
 
     public function iterate()
     {
-        $living_cells = array();
-        $neighbour_cells = array();
+        $this->iteration_seed = $this->seed;
+        $living_cells_after_iteration = array();
 
-        foreach( $this->seed as $cell )
+        //given a list of currently alive cells, get the complete neighbourhood of surrounding cells.
+        $living_neighbourhood = $this->calculateCellNeighbourhood();
+
+        foreach( $living_neighbourhood as $potential_living_cell )
         {
-            $neighbour_count = 0;
-            $neighbour_cells = array_merge($neighbour_cells, $this->getCellNeighbours( $cell ));
+            $number_of_living_neighbours = $this->calculateLivingNeighbours( $potential_living_cell );
 
-            foreach( $this->seed as $neighbour )
+            if( ( $number_of_living_neighbours == 2 && in_array($potential_living_cell, $this->iteration_seed ) )
+                || $number_of_living_neighbours == 3 )
             {
-                if( $neighbour->getX() >= $cell->getX() - 1 && 
-                    $neighbour->getX() <= $cell->getX() + 1 &&
-                    $neighbour->getY() >= $cell->getY() - 1 && 
-                    $neighbour->getY() <= $cell->getY() + 1 &&
-                    $neighbour !== $cell
-                ){
-                    $neighbour_count++;
-                }  
-            }
-
-            if( $neighbour_count === 2 || $neighbour_count === 3  )
-            {
-                $living_cells[] = $cell;
+                $living_cells_after_iteration[] = $potential_living_cell;
             }
         }
 
-        //enliven cells with 3 neighbours
-        foreach( $this->countCellOccurances( $neighbour_cells ) as $cell_key => $cell_count )
-        {
-            if( $cell_count == 3 )
-            {
-                list( $new_cell_x, $new_cell_y ) = explode("_", $cell_key);
-                $living_cells[] = new Cell( $new_cell_x, $new_cell_y );
-            }
-        }
-
-        return $living_cells;
+        return $living_cells_after_iteration;
     }
 
-    private function countCellOccurances( Array $cells )
-    {   
-        $cell_counts = array();
+    private function calculateLivingNeighbours( Cell $center_cell )
+    {
+        $neighbour_count = 0;
 
-        foreach( $cells as $cell )
+        foreach( $this->iteration_seed as $living_cell )
         {
-            // $cell_as_key = print_r($cell, true); // Doesn't work?
-            $cell_as_key = $cell->getX() . "_" . $cell->getY() ;
-            $cell_counts[ $cell_as_key ]++;
+            if( $center_cell->getX() >= $living_cell->getX() - 1 && 
+                $center_cell->getX() <= $living_cell->getX() + 1 &&
+                $center_cell->getY() >= $living_cell->getY() - 1 && 
+                $center_cell->getY() <= $living_cell->getY() + 1 &&
+                $center_cell != $living_cell
+            ){
+                $neighbour_count++;
+            } 
         }
 
-        return $cell_counts;
+        return $neighbour_count;
+    }    
+
+    private function calculateCellNeighbourhood()
+    {
+        $cell_neighbourhood = array();
+
+        foreach( $this->iteration_seed as $seed_cell )
+        {
+            $cell_neighbourhood = array_merge($cell_neighbourhood, $this->getCellsNeighbours( $seed_cell ));
+        }
+
+        return array_unique($cell_neighbourhood, SORT_REGULAR);
     }
 
-    private function getCellNeighbours( Cell $cell )
+    private function getCellsNeighbours( Cell $cell )
     {   
         $neighbours = array();
-
+        $cell_range = range(-1, 1);
         $cell_x = $cell->getX();
         $cell_y = $cell->getY();
 
-        array_push($neighbours, 
-            new Cell( $cell_x - 1, $cell_y - 1 ),  // top left
-            new Cell( $cell_x, $cell_y - 1 ),      // top
-            new Cell( $cell_x + 1, $cell_y - 1 ),  // top right
-
-            new Cell( $cell_x - 1, $cell_y ),      // left
-            new Cell( $cell_x + 1, $cell_y ),      // right
-
-            new Cell( $cell_x - 1, $cell_y + 1 ),  // bottom left
-            new Cell( $cell_x, $cell_y + 1 ),      // bottom
-            new Cell( $cell_x + 1, $cell_y + 1 )  // bottom right
-        );
+        foreach( $cell_range as $x_range )
+        {
+            foreach( $cell_range as $y_range )
+            {
+                $neighbours[] = new Cell( $cell_x + $x_range, $cell_y + $y_range );
+            }
+        }
 
         return $neighbours;
     }
 }
+
 
 class Cell
 {
@@ -101,7 +96,7 @@ class Cell
 
     public function __toString()
     {
-        return $this->x . "_" . $this->y;
+        return "({$this->x},{$this->y})";;
     }
 
     public function getX()
@@ -114,3 +109,4 @@ class Cell
         return $this->y; 
     }
 }
+

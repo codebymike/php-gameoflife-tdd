@@ -3,22 +3,6 @@ require_once "gol.php";
 
 class GolTest extends PHPUnit_Framework_TestCase
 {
-    /*
-    private $gol;
-
-    public function setUp()
-    {
-        $this->gol = new Gol( array() );
-    }
-    */
-
-    /*
-    public function testJustATest()
-    {
-        $this->assertEquals('Hello, World!', $this->gol->helloWorld());
-    }
-    */
-
     public function testWhenNoLivingCellsAfterOneInterationStillNoLivingCells()
     {
         $gol = new Gol( array() );
@@ -36,7 +20,7 @@ class GolTest extends PHPUnit_Framework_TestCase
 
     public function testWhenCellhasOneNeighbourItDies()
     {
-        $seed = array( new Cell(1,1), new Cell(1,2) );
+        $seed = array( new Cell(3,2), new Cell(4,2) );
 
         $gol = new Gol( $seed );
 
@@ -73,13 +57,13 @@ class GolTest extends PHPUnit_Framework_TestCase
     public function testWhenCellHasExactlyThreeNeighboursItComesToLife()
     {
 
-        $seed = array( new Cell(1,1), new Cell(1,3), new Cell(2,2) );
+        $seed = array( new Cell(1,3), new Cell(2,2), new Cell(2,4) );
 
         $gol = new Gol( $seed );
 
         $iterate = $gol->iterate();
 
-        $this->assertTrue( in_array( new Cell(1,2), $iterate ));
+        $this->assertTrue( in_array( new Cell(2,3), $iterate ));
     }
 
 
