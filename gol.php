@@ -13,9 +13,9 @@ class Gol
     {
         $living_cells_post_iteration = array();
 
-        foreach( $this->calculateCellNeighbourhood() as $potential_living_cell )
+        foreach( $this->getLivingCellNeighbourhood() as $potential_living_cell )
         {
-            $number_of_living_neighbours = $this->calculateLivingNeighbours( $potential_living_cell );
+            $number_of_living_neighbours = $this->getNumberLivingNeighbours( $potential_living_cell );
 
             if( $this->cellShouldLive( $potential_living_cell, $number_of_living_neighbours ) )
             {
@@ -34,7 +34,7 @@ class Gol
             ( $living_neighbour_count == 2 && in_array($cell, $this->living_cells ) );
     }
 
-    private function calculateLivingNeighbours( Cell $center_cell )
+    private function getNumberLivingNeighbours( Cell $center_cell )
     {
         $neighbour_count = 0;
 
@@ -53,19 +53,19 @@ class Gol
         return $neighbour_count;
     }    
 
-    private function calculateCellNeighbourhood()
+    private function getLivingCellNeighbourhood()
     {
         $cell_neighbourhood = array();
 
         foreach( $this->living_cells as $seed_cell )
         {
-            $cell_neighbourhood = array_merge($cell_neighbourhood, $this->getCellsNeighbours( $seed_cell ));
+            $cell_neighbourhood = array_merge($cell_neighbourhood, $this->getSingleCellNeighbours( $seed_cell ));
         }
 
         return array_unique($cell_neighbourhood, SORT_REGULAR);
     }
 
-    private function getCellsNeighbours( Cell $cell )
+    private function getSingleCellNeighbours( Cell $cell )
     {   
         $neighbours = array();
         $cell_range = range(-1, 1);
