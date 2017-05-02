@@ -11,25 +11,27 @@ class Gol
 
     public function iterate()
     {
-        $living_cells_after_iteration = array();
+        $living_cells_post_iteration = array();
 
-        //given a list of currently alive cells, get the complete neighbourhood of surrounding cells.
-        $living_neighbourhood = $this->calculateCellNeighbourhood();
-
-        foreach( $living_neighbourhood as $potential_living_cell )
+        foreach( $this->calculateCellNeighbourhood() as $potential_living_cell )
         {
             $number_of_living_neighbours = $this->calculateLivingNeighbours( $potential_living_cell );
 
-            if( ( $number_of_living_neighbours == 2 && in_array($potential_living_cell, $this->living_cells ) )
-                || $number_of_living_neighbours == 3 )
+            if( $this->cellShouldLive( $potential_living_cell, $number_of_living_neighbours ) )
             {
-                $living_cells_after_iteration[] = $potential_living_cell;
+                $living_cells_post_iteration[] = $potential_living_cell;
             }
         }
 
-        $this->living_cells = $living_cells_after_iteration;
+        $this->living_cells = $living_cells_post_iteration;
 
         return $this->living_cells;
+    }
+
+    private function cellShouldLive( $cell, $living_neighbour_count )
+    {
+        return $living_neighbour_count == 3 || 
+            ( $living_neighbour_count == 2 && in_array($cell, $this->living_cells ) );
     }
 
     private function calculateLivingNeighbours( Cell $center_cell )
@@ -96,7 +98,7 @@ class Cell
 
     public function __toString()
     {
-        return "({$this->x},{$this->y})";;
+        return "({$this->x},{$this->y})";
     }
 
     public function getX()
